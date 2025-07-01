@@ -28,6 +28,6 @@ jobs:
               run: dotnet build --configuration Release
 
             - name: list files
-              run: ls
+              run: ls bin/Release/net8.0
             - name: print pwd
               run: pwd
