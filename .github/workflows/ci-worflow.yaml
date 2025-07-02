@@ -27,7 +27,14 @@ jobs:
             - name: Build application
               run: dotnet build --configuration Release
 
-            - name: list files
-              run: ls bin/Release/net8.0
-            - name: print pwd
-              run: pwd
+            - name: Login to GHCR
+              run: |
+                echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+            - name: Publish
+              run: |
+                  dotnet publish --os linux --arch x64 \
+                  /t:PublishContainer \
+                  -p ContainerRegistry=ghcr.io \
+                  -p ContainerImageName=${{ github.repository }} \
+                  -p ContainerImageTag=latestrun: |
+                 
