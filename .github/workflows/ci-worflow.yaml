@@ -39,6 +39,19 @@ jobs:
             -p ContainerRegistry=ghcr.io \
             -p ContainerRepository=${{ github.repository }} \
             -p ContainerImageTag=latest
+      - name: Notify Slack
+        if: success()
+        run: |
+          curl -X POST -H 'Content-type: application/json' \
+            --data '{"text":"✅ Application build completed successfully."}' \
+            ${{ secrets.SLACK_WEBHOOK_URL }}
+      
+      - name: Notify Slack on Failure
+        if: failure()
+        run: |
+          curl -X POST -H 'Content-type: application/json' \
+            --data '{"text":"❌ Deployment failed on self-hosted runner."}' \
+            ${{ secrets.SLACK_WEBHOOK_URL }}
 
   deploy:
     needs: build
