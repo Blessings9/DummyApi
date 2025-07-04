@@ -37,7 +37,7 @@ jobs:
           dotnet publish --os linux --arch x64 \
             /t:PublishContainer \
             -p ContainerRegistry=ghcr.io \
-            -p ContainerImageName=${{ github.repository }} \
+            -p ContainerRepository=${{ github.repository }} \
             -p ContainerImageTag=latest
 
   deploy:
