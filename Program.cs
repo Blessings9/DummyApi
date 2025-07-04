@@ -7,7 +7,7 @@ app.MapGet("/api/dummy", () =>
     return Results.Ok(new
     {
         status = "success",
-        message = "Hello from the .NET 9 dummy endpoint!"
+        message = "Hello TK, automation has worked!"
     });
 });
 
