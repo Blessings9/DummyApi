@@ -7,7 +7,7 @@ app.MapGet("/api/dummy", () =>
     return Results.Ok(new
     {
         status = "success",
-        message = "Hello TK, here we come:"
+        message = "Hello Agatha/vesion 2"
     });
 });
 
