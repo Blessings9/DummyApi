@@ -43,14 +43,14 @@ jobs:
         if: success()
         run: |
           curl -X POST -H 'Content-type: application/json' \
-            --data '{"text":"✅ Application build completed successfully."}' \
+            --data '{"text":"✅ Application build completed successfully.",  "icon_url": "https://iconduck.com/icons/69117/github-action/download/png/128",}' \
             ${{ secrets.SLACK_WEBHOOK_URL }}
       
       - name: Notify Slack on Failure
         if: failure()
         run: |
           curl -X POST -H 'Content-type: application/json' \
-            --data '{"text":"❌ Deployment failed on self-hosted runner."}' \
+            --data '{"text":"❌ Application build failed."}' \
             ${{ secrets.SLACK_WEBHOOK_URL }}
 
   deploy:
@@ -71,3 +71,17 @@ jobs:
             --name dummy-api \
             -p 8000:8080 \
             ghcr.io/blessings9/dummyapi:latest
+      
+        - name: Notify Slack
+        if: success()
+        run: |
+          curl -X POST -H 'Content-type: application/json' \
+            --data '{"text":"✅ Application Deployed successfully."}' \
+            ${{ secrets.SLACK_WEBHOOK_URL }}
+      
+      - name: Notify Slack on Failure
+        if: failure()
+        run: |
+          curl -X POST -H 'Content-type: application/json' \
+            --data '{"text":"❌ Deployment failed on self-hosted runner."}' \
+            ${{ secrets.SLACK_WEBHOOK_URL }}
