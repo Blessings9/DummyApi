@@ -53,35 +53,54 @@ jobs:
             --data '{"text":"❌ Application build failed."}' \
             ${{ secrets.SLACK_WEBHOOK_URL }}
 
-  deploy:
-    needs: build
-    runs-on: self-hosted
-
-    steps:
-      - name: Pull latest image
-        run: docker pull ghcr.io/blessings9/dummyapi:latest
-
-      - name: Stop and remove existing container
+      - name: Backup currently running container (if exists)
         run: |
-          docker rm -f dummy-api || true
+          if docker ps -a --format '{{.Names}}' | grep -q '^dummy-api$'; then
+            docker commit dummy-api dummyapi:backup
+            docker stop dummy-api
+            docker rm dummy-api
+          fi
 
       - name: Run updated container
+        id: deploy
         run: |
           docker run -d \
             --name dummy-api \
             -p 8000:8080 \
             ghcr.io/blessings9/dummyapi:latest
-      
-      - name: Notify Slack
+
+      - name: Health Check
+        id: healthcheck
+        run: |
+          sleep 10
+          if curl -s --fail http://localhost:8000/health; then
+            echo "Health check passed."
+          else
+            echo "Health check failed."
+            exit 1
+          fi
+
+      - name: Notify Slack - Success
         if: success()
         run: |
           curl -X POST -H 'Content-type: application/json' \
-            --data '{"username: "Github Actions","icon_url": "https://raw.githubusercontent.com/jmnote/z-icons/master/svg/github.svg","text":"✅ Application Deployed successfully."}' \
+            --data '{"username": "GitHub Actions", "icon_url": "https://raw.githubusercontent.com/jmnote/z-icons/master/svg/github.svg", "text": "✅ Application Deployed successfully."}' \
             ${{ secrets.SLACK_WEBHOOK_URL }}
-      
-      - name: Notify Slack on Failure
+
+      - name: Rollback on failure
+        if: failure()
+        run: |
+          echo "Rolling back to previous container..."
+          docker stop dummy-api || true
+          docker rm dummy-api || true
+          docker run -d \
+            --name dummy-api \
+            -p 8000:8080 \
+            dummyapi:backup
+
+      - name: Notify Slack - Failure
         if: failure()
         run: |
           curl -X POST -H 'Content-type: application/json' \
-            --data '{"text":"❌ Deployment failed on self-hosted runner."}' \
+            --data '{"text":"❌ Deployment failed. Rolled back to previous version."}' \
             ${{ secrets.SLACK_WEBHOOK_URL }}
