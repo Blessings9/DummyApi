@@ -53,6 +53,18 @@ jobs:
             --data '{"text":"❌ Application build failed."}' \
             ${{ secrets.SLACK_WEBHOOK_URL }}
 
+  deploy:
+    needs: build
+    runs-on: self-hosted
+
+    steps:
+      - name: Login to GHCR
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      - name: Pull latest image
+        run: docker pull ghcr.io/blessings9/dummyapi:latest
+
       - name: Backup currently running container (if exists)
         run: |
           if docker ps -a --format '{{.Names}}' | grep -q '^dummy-api$'; then
